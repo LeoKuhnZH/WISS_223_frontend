@@ -48,10 +48,7 @@ export const login = async (usernameOrEmail, password) => {
  * Logout Funktion
  * Löscht Token aus localStorage
  */
-export const logout = () => {
-    console.log("🚪 Logout - Token wird gelöscht");
-    localStorage.removeItem("authToken");
-};
+
 
 /**
  * Prüft ob User eingeloggt ist

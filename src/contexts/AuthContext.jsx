@@ -1,109 +1,120 @@
-import { createContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { login as apiLogin, logout as apiLogout, getUserData } from '../services/auth-service';
 
-// Context erstellen
-export const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-// Provider Component
 export const AuthProvider = ({ children }) => {
-    // ==========================================
-    // STATE
-    // ==========================================
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // ==========================================
-    // FUNKTIONEN
-    // ==========================================
+    // Beim Start: Prüfe ob Token + User-Daten vorhanden
+    useEffect(() => {
+        checkAuth();
+    }, []);
 
     /**
-     * Login Funktion (aktuell noch Fake)
-     * Wird in Block 4A durch echten API Call ersetzt!
-     *
-     * @param {string} usernameOrEmail - Username ODER Email
-     * @param {string} password - Passwort
+     * Prüft ob User eingeloggt ist (Token + User-Daten in localStorage?)
      */
-    const login = (usernameOrEmail, password) => {
-        setIsLoading(true);
+    const checkAuth = () => {
+        console.log('🔍 Prüfe Auth-Status...');
 
-        // TODO: Später ersetzen durch echten API Call!
-        setTimeout(() => {
-            if (usernameOrEmail && password) {
-                // Fake User erstellen (simuliert Backend Response)
-                const fakeUser = {
-                    id: 1,
-                    username: usernameOrEmail.includes('@')
-                        ? usernameOrEmail.split('@')[0]  // Email → Username extrahieren
-                        : usernameOrEmail,                // Username direkt
-                    email: usernameOrEmail.includes('@')
-                        ? usernameOrEmail                 // Ist schon Email
-                        : `${usernameOrEmail}@example.com`, // Username → Fake Email
-                    role: usernameOrEmail === 'admin' || usernameOrEmail === 'admin@quiz.com'
-                        ? 'ADMIN'
-                        : 'USER'  // ← Backend verwendet "USER" nicht "PLAYER"!
-                };
+        const storedToken = localStorage.getItem('authToken');
+        const storedUserData = getUserData();  // Aus localStorage!
 
-                // Fake Token
-                const fakeToken = 'fake-jwt-token-' + Date.now();
+        if (storedToken && storedUserData) {
+            console.log('✅ Token + User-Daten gefunden - User ist eingeloggt');
+            setToken(storedToken);
+            setUser(storedUserData);
+            setIsAuthenticated(true);
+        } else {
+            console.log('❌ Kein Token oder User-Daten - User nicht eingeloggt');
+            setIsAuthenticated(false);
+        }
 
-                setUser(fakeUser);
-                setToken(fakeToken);
-                console.log('✅ Login erfolgreich (FAKE):', fakeUser);
-            } else {
-                console.error('❌ Login fehlgeschlagen');
-            }
-
-            setIsLoading(false);
-        }, 1000);
+        setIsLoading(false);
     };
 
     /**
-     * Logout Funktion
+     * Login
+     * @param {string} usernameOrEmail - Username oder Email
+     * @param {string} password - Passwort
+     */
+    const login = async (usernameOrEmail, password) => {
+        try {
+            console.log('📧 AuthContext: Login für', usernameOrEmail);
+
+            // API Call (speichert Token + User-Daten in localStorage)
+            const response = await apiLogin(usernameOrEmail, password);
+
+            // Response enthält: { token, userId, username, email, role, expiresIn }
+            setToken(response.token);
+            setUser({
+                id: response.userId,
+                username: response.username,
+                email: response.email,
+                role: response.role
+            });
+            setIsAuthenticated(true);
+
+            console.log('✅ AuthContext: Login erfolgreich');
+            return response;
+
+        } catch (error) {
+            console.error('❌ AuthContext: Login fehlgeschlagen', error);
+            throw error;
+        }
+    };
+
+    /**
+     * Logout
      */
     const logout = () => {
         console.log('🚪 AuthContext: Logout');
-
-        // API logout (löscht localStorage)
-        apiLogout();
-
-        // State zurücksetzen
+        apiLogout();  // Löscht localStorage
         setToken(null);
         setUser(null);
         setIsAuthenticated(false);
-
-        console.log('✅ AuthContext: Logout erfolgreich');
-
-        // Redirect zur Home-Page (NEU!)
         window.location.href = '/';
     };
 
-
-    /**
-     * Ist ein User eingeloggt?
-     */
-    const isAuthenticated = user !== null;
-
-    // ==========================================
-    // CONTEXT VALUE
-    // ==========================================
     const value = {
-        // State
         user,
         token,
-        isLoading,
         isAuthenticated,
-        // Funktionen
+        isLoading,
         login,
-        logout
+        logout,
+        checkAuth
     };
 
-    // ==========================================
-    // PROVIDER
-    // ==========================================
+    // Loading State während checkAuth läuft
+    if (isLoading) {
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh'
+            }}>
+                <h2>Lädt...</h2>
+            </div>
+        );
+    }
+
     return (
         <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
     );
 };
-export default AuthContext;
+
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth muss innerhalb von AuthProvider verwendet werden!');
+    }
+    return context;
+};
+
