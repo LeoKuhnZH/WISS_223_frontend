@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { AuthContext } from "../contexts/AuthContext.jsx";
+import {useContext} from "react";
 
 const Navigation = () => {
-    const { isAuthenticated, user, logout } = useAuth();
+    const { isAuthenticated, user, logout } = useContext(AuthContext);
 
     // Logout Handler
     const handleLogout = () => {
