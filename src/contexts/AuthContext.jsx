@@ -61,10 +61,22 @@ export const AuthProvider = ({ children }) => {
      * Logout Funktion
      */
     const logout = () => {
-        setUser(null);
+        console.log('🚪 AuthContext: Logout');
+
+        // API logout (löscht localStorage)
+        apiLogout();
+
+        // State zurücksetzen
         setToken(null);
-        console.log('👋 User ausgeloggt');
+        setUser(null);
+        setIsAuthenticated(false);
+
+        console.log('✅ AuthContext: Logout erfolgreich');
+
+        // Redirect zur Home-Page (NEU!)
+        window.location.href = '/';
     };
+
 
     /**
      * Ist ein User eingeloggt?
