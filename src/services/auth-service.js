@@ -90,3 +90,28 @@ export const register = async (userData) => {
         throw new Error(errorMessage);
     }
 };
+// ===================================
+// AUTH FUNKTIONEN
+// ===================================
+
+/**
+ * Logout - Löscht Token und User-Daten
+ */
+export const logout = () => {
+    console.log('🚪 Logout - Daten werden gelöscht');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userData');
+};
+
+/**
+ * Hole User-Daten aus localStorage
+ * (Brauchen keinen Backend-Call, haben alles vom Login!)
+ */
+export const getUserData = () => {
+    const userDataString = localStorage.getItem('userData');
+    if (userDataString) {
+        return JSON.parse(userDataString);
+    }
+    return null;
+};
+
