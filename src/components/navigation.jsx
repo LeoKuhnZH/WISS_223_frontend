@@ -68,7 +68,9 @@ const Navigation = () => {
                 ) : (
                     // Nicht eingeloggt: Zeige Login Link
                     <Link to="/login">Login</Link>
-                )}
+
+
+                    )}
             </div>
         </nav>
     );
