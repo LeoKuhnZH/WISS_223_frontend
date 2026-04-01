@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { getQuizQuestions } from "../utils/java-api";
+import { getQuizQuestions } from "../services/questionService.js";
 import { getDemoQuizQuestions } from "../utils/demo-api";
 
 import Button from "../components/button";

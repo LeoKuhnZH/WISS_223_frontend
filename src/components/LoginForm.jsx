@@ -76,7 +76,7 @@ const LoginForm = ({onLogin}) => {
     // ==========================================
     // HANDLER: Submit
     // ==========================================
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {  // ← async hinzufügen!
         e.preventDefault();
 
         // Alle Felder validieren
@@ -90,19 +90,25 @@ const LoginForm = ({onLogin}) => {
 
         setIsLoading(true);
 
-// Login-Daten an Parent weitergeben
+        // Login-Daten an Parent weitergeben
         const loginData = {
             usernameOrEmail: usernameOrEmail,
             password: password,
         };
 
-        // Parent-Funktion aufrufen (kommt später von AuthContext)
-        if (onLogin) {
-            onLogin(loginData);
+        // Parent-Funktion aufrufen (jetzt mit await!)
+        try {
+            if (onLogin) {
+                await onLogin(loginData);  // ← await hinzufügen!
+            }
+        } catch (error) {
+            // Error wird in Parent behandelt
+            console.error("LoginForm Error:", error);
+        } finally {
+            setIsLoading(false);  // ← Jetzt im finally Block!
         }
-
-        setIsLoading(false);
     };
+
 
     // ==========================================
     // HELPER: CSS Klasse für Input

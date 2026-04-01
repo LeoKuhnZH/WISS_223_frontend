@@ -2,10 +2,10 @@ import { useState, useEffect } from "react";
 
 import {
   getAllQuizQuestions,
-  createQuizQuestion,
-  updateQuizQuestion,
-  deleteQuizQuestion,
-} from "../utils/java-api"; // Importieren der API-Funktion
+      createQuizQuestion,
+      updateQuizQuestion,
+      deleteQuizQuestion
+} from "../services/questionService";// Importieren der API-Funktion
 import QuestionForm from "../components/question-form";
 import QuestionCard from "../components/question-card";
 
